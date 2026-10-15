@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Puzzle World - Studio</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <main>
+      <section id="home" class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">Studio Puzzle</span>
+          <h1>Potong gambar jadi puzzle yang siap dimainkan.</h1>
+          <p>Unggah gambar, buat 9 kepingan dari area tengah, lalu susun kembali di bingkai 5 x 5.</p>
+          <div class="hero-actions">
+            <button class="button button-accent" id="startBtn">Mulai buat puzzle</button>
+          </div>
+        </div>
+        <div class="hero-desk" aria-hidden="true">
+          <img class="asset asset-plant" src="assets/Plant.svg" alt="">
+          <img class="asset asset-ruler" src="assets/Ruler.svg" alt="">
+          <img class="asset asset-pen" src="assets/Pen.svg" alt="">
+          <div class="hero-board">
+            <div class="art-grid" id="heroMosaic"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace" id="workspace">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow accent">Ruang Kerja</span>
+            <h2>Mulai dari gambar pilihanmu<span class="period">.</span></h2>
+          </div>
+        </div>
+
+        <div class="upload-wrap" id="uploadWrap">
+          <div class="upload-text">
+            <h3>Unggah gambar.</h3>
+            <p>Pilih foto yang ingin dipakai. Sistem akan membuat bingkai 5 x 5 dengan 9 kepingan puzzle aktif di bagian tengah.</p>
+            <div class="upload-actions">
+              <label class="button button-accent" for="fileInput">Pilih gambar</label>
+              <input type="file" id="fileInput" accept="image/*" hidden>
+              <span id="fileMeta">PNG, JPG, WEBP - minimal 5 x 5 px</span>
+            </div>
+          </div>
+          <div class="upload-image" id="uploadPreview">
+            <img class="asset upload-plant" src="assets/Plant.svg" alt="" aria-hidden="true">
+            <img class="asset upload-pen" src="assets/Pen.svg" alt="" aria-hidden="true">
+            <div class="upload-placeholder">
+              <span>+</span>
+              <small>Pratinjau gambar</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <div class="action-info">
+            <span class="status-dot"></span>
+            <span id="status">Pilih gambar untuk memulai.</span>
+          </div>
+          <div class="action-buttons">
+            <button class="button button-outline" id="changeBtn" disabled>Ganti gambar</button>
+            <button class="button button-accent" id="generateBtn" disabled>Buat puzzle</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="playSection" class="game-section hidden" aria-live="polite">
+        <div class="puzzle-desk" id="puzzleTable">
+          <img class="asset desk-plant" src="assets/Plant.svg" alt="" aria-hidden="true">
+          <img class="asset desk-ruler" src="assets/Ruler.svg" alt="" aria-hidden="true">
+          <img class="asset desk-pen" src="assets/Pen.svg" alt="" aria-hidden="true">
+
+          <div class="table-toolbar">
+            <div class="toolbar-progress">
+              <strong id="progressCount">0 <span>/ 9</span></strong>
+              <div class="progress-track"><div id="progressFill"></div></div>
+            </div>
+            <div class="table-actions">
+              <button class="button button-secondary" id="showOriginal">Lihat Referensi</button>
+              <button class="button button-secondary" id="shuffleBtn">Acak</button>
+              <button class="button button-secondary" id="resetBtn">Reset</button>
+              <button class="button button-accent" id="exportBtn">Unduh ZIP</button>
+            </div>
+          </div>
+
+          <div class="table-stage" id="tableStage">
+            <div id="board" class="play-board" aria-label="Bingkai puzzle 5 kali 5"></div>
+            <div id="piecesLayer" class="pieces-layer" aria-label="Kepingan puzzle tersebar"></div>
+            <div id="rotationControls" class="rotation-controls hidden" aria-hidden="true">
+              <button type="button" id="rotateLeftBtn" aria-label="Putar kiri">Q</button>
+              <button type="button" id="rotateRightBtn" aria-label="Putar kanan">E</button>
+            </div>
+            <div class="table-status" id="gameStatus">Catatan: tekan Q/E atau klik dua kali untuk memutar kepingan.</div>
+            <div id="completeOverlay" class="complete-overlay hidden">
+              <div>
+                <span class="mini-label">Puzzle Completed!</span>
+                <h3>Selesai.</h3>
+                <p>Semua kepingan sudah berada di posisi yang benar.</p>
+                <button class="button button-accent" id="playAgainBtn">Main lagi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <dialog id="referenceDialog">
+    <div class="dialog-heading">
+      <strong>Gambar asli</strong>
+      <button id="closeReference" aria-label="Tutup">x</button>
+    </div>
+    <img id="referenceImage" alt="Referensi gambar asli">
+    <p>Gunakan gambar ini sebagai acuan saat menyusun puzzle.</p>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
