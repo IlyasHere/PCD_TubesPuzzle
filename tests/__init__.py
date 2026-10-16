@@ -1,0 +1,1 @@
+"""Puzzle World test suite."""

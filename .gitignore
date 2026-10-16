@@ -1,0 +1,6 @@
+.venv/
+node_modules/
+Puzzle_World_Output/
+__pycache__/
+*.py[cod]
+.DS_Store

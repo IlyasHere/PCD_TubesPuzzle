@@ -1,25 +1,71 @@
-# Puzzle World — Studio (5×5)
+# Puzzle World - Studio Edition
 
-Aplikasi Puzzle Generator berbasis HTML, CSS dan JavaScript (tanpa backend). Desain terinspirasi referensi editorial bernuansa charcoal. Aset latar (`assets/texture.png`) berasal dari gambar yang diberikan pengguna.
+Aplikasi web untuk membuat dan memainkan puzzle jigsaw 3 x 3 dari gambar pilihan pengguna.
 
-## Cara menjalankan
+## Fitur
 
-Buka `index.html` di browser Chrome atau Safari. Bisa juga via VS Code Live Server. Fitur ZIP memakai JSZip melalui CDN dan membutuhkan internet.
+- Upload dan pratinjau gambar.
+- Generator puzzle 3 x 3.
+- Drag-and-drop, rotasi, snap, acak, dan reset.
+- Progress permainan dan gambar referensi.
 
-## Alur
+## Teknologi
 
-1. Pilih gambar (RGB/grayscale, setidaknya 5×5 pixel).
-2. Klik Generate puzzle. Crop asli dilakukan di Canvas berdasarkan koordinat 5×5; semua piksel terbagi ke 25 bagian.
-3. Klik sebuah potongan kemudian klik sel bingkai untuk memasangnya, atau tarik dan jatuhkan potongan. Klik sel terisi tanpa memilih potongan untuk mengembalikannya.
-4. Acak ulang, reset, buka referensi gambar, atau unduh ZIP.
+- Python
+- Flask
+- Pillow
+- HTML
+- CSS
+- Vanilla JavaScript
 
-## Output
+## Struktur Project
 
-File ZIP berisi folder `Puzzle_World_Output`, dengan `bingkai_5x5.png` serta `piece_r1_c1.png` sampai `piece_r5_c5.png`. Rasionya dijaga sesuai gambar asli. Pengacakan hanya mengubah urutan tray, bukan urutan file.
+```text
+Puzzle_World/
+├── app.py
+├── main.py
+├── requirements.txt
+├── processing/
+│   ├── image_processor.py
+│   └── puzzle_generator.py
+├── templates/
+│   └── index.html
+├── static/
+│   ├── assets/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── main.js
+│       └── puzzle-interaction.js
+└── tests/
+    ├── test_app.py
+    └── test_processing.py
+```
 
-## File
+## Instalasi
 
-- `index.html` — struktur aplikasi
-- `style.css` — desain
-- `script.js` — algoritma cropping, interaksi, ekspor
-- `assets/` — tekstur dan aset referensi tambahan
+```bash
+python -m pip install -r requirements.txt
+```
+
+## Menjalankan Aplikasi
+
+```bash
+python app.py
+```
+
+Buka `http://127.0.0.1:5000` di browser.
+
+## Kontrol Permainan
+
+- Geser kepingan menggunakan mouse atau trackpad.
+- Tekan `Q` untuk memutar ke kiri.
+- Tekan `E` atau klik dua kali untuk memutar ke kanan.
+- Gunakan tombol **Acak** atau **Reset** untuk mengatur ulang permainan.
+
+## Pengujian
+
+```bash
+python -m unittest discover -s tests -v
+```
+
