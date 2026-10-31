@@ -89,6 +89,61 @@ def api_generate():
         return jsonify(error="Gagal memproses gambar."), 500
 
 
+@app.post("/api/upload-zip")
+def api_upload_zip():
+    cleanup_expired()
+    uploaded = request.files.get("archive")
+    if uploaded is None or not uploaded.filename:
+        return jsonify(error="Pilih ZIP puzzle terlebih dahulu."), 400
+    puzzle_id = secrets.token_hex(16)
+    output_dir = PUZZLE_ROOT / puzzle_id
+    allowed = {"guide.png", "bingkai_5x5.png", "metadata.json"} | {
+        f"piece_r{row}_c{col}.png" for row in range(1, 4) for col in range(1, 4)
+    }
+    try:
+        with zipfile.ZipFile(uploaded.stream) as archive:
+            files = {}
+            for info in archive.infolist():
+                if info.is_dir():
+                    continue
+                name = Path(info.filename.replace("\\", "/")).name
+                if name not in allowed or name in files or info.file_size > 20 * 1024 * 1024:
+                    raise ValueError("Isi ZIP tidak sesuai dengan puzzle Puzzle World.")
+                files[name] = archive.read(info)
+            if set(files) != allowed:
+                raise ValueError("ZIP harus berasal dari fitur Unduh ZIP dan memiliki semua file puzzle.")
+        metadata = json.loads(files["metadata.json"])
+        if metadata.get("grid") != 3 or metadata.get("width", 0) < 5 or metadata.get("height", 0) < 5 or len(metadata.get("pieces", [])) != 9:
+            raise ValueError("Metadata puzzle tidak valid.")
+        from PIL import Image
+        for name in allowed - {"metadata.json"}:
+            with Image.open(BytesIO(files[name])) as image:
+                image.verify()
+        output_dir.mkdir(parents=True, exist_ok=False)
+        for name in allowed - {"metadata.json"}:
+            (output_dir / name).write_bytes(files[name])
+        metadata.update({
+            "puzzleId": puzzle_id,
+            "guideUrl": url_for("puzzle_asset", puzzle_id=puzzle_id, filename="guide.png"),
+            "frameUrl": url_for("puzzle_asset", puzzle_id=puzzle_id, filename="bingkai_5x5.png"),
+            "exportUrl": url_for("api_export", puzzle_id=puzzle_id),
+        })
+        for piece in metadata["pieces"]:
+            name = piece.get("file")
+            if name not in allowed or not name.startswith("piece_"):
+                raise ValueError("Daftar kepingan pada ZIP tidak valid.")
+            piece["url"] = url_for("puzzle_asset", puzzle_id=puzzle_id, filename=name)
+        (output_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+        return jsonify(metadata)
+    except (zipfile.BadZipFile, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        shutil.rmtree(output_dir, ignore_errors=True)
+        return jsonify(error=str(exc) or "ZIP puzzle tidak valid."), 400
+    except Exception:
+        shutil.rmtree(output_dir, ignore_errors=True)
+        app.logger.exception("Puzzle ZIP upload failed")
+        return jsonify(error="Gagal membaca ZIP puzzle."), 400
+
+
 @app.get("/api/puzzles/<puzzle_id>/<filename>")
 def puzzle_asset(puzzle_id: str, filename: str):
     directory = _puzzle_dir(puzzle_id)
@@ -113,6 +168,8 @@ def api_export(puzzle_id: str):
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in files:
             archive.write(path, f"Puzzle_World_Output/{path.name}")
+        archive.write(directory / "guide.png", "Puzzle_World_Output/guide.png")
+        archive.write(directory / "metadata.json", "Puzzle_World_Output/metadata.json")
     buffer.seek(0)
     return send_file(
         buffer,

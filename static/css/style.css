@@ -905,6 +905,24 @@ button:disabled {
   pointer-events: none;
 }
 
+.board-slots {
+  position: absolute;
+  left: 20%;
+  top: 20%;
+  z-index: 1;
+  width: 60%;
+  height: 60%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.board-slot {
+  fill: #fff;
+  stroke: #918879;
+  stroke-width: .012;
+  stroke-linejoin: round;
+}
+
 .pieces-layer {
   position: absolute;
   inset: 0;

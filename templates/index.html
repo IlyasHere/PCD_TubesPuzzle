@@ -19,6 +19,7 @@
           <p>Unggah gambar, lalu susun 9 kepingan jigsaw pada area putih 3 x 3.</p>
           <div class="hero-actions">
             <button class="button button-accent" id="startBtn">Mulai buat puzzle</button>
+            <button class="button button-outline" id="solveZipBtn">Selesaikan puzzle dari ZIP</button>
           </div>
         </div>
         <div class="hero-desk" aria-hidden="true">
@@ -28,6 +29,14 @@
           <div class="hero-board">
             <div class="art-grid" id="heroMosaic"></div>
           </div>
+        </div>
+      </section>
+
+      <section class="workspace zip-workspace" id="zipWorkspace">
+        <div class="section-head"><div><span class="eyebrow accent">Lanjutkan permainan</span><h2>Selesaikan puzzle dari ZIP<span class="period">.</span></h2><p>Unggah ZIP hasil unduhan Puzzle World untuk menyusun kepingannya sendiri atau melihat auto-solved.</p></div></div>
+        <div class="action-bar">
+          <div class="upload-actions"><label class="button button-accent" for="zipInput">Pilih ZIP puzzle</label><input type="file" id="zipInput" accept=".zip,application/zip" hidden><span id="zipMeta">ZIP hasil unduhan Puzzle World</span></div>
+          <button class="button button-accent" id="loadZipBtn" disabled>Mainkan puzzle ZIP</button>
         </div>
       </section>
 
@@ -86,6 +95,7 @@
               <button class="button button-secondary" id="showOriginal">Lihat Referensi</button>
               <button class="button button-secondary" id="shuffleBtn">Acak</button>
               <button class="button button-secondary" id="resetBtn">Reset</button>
+              <button class="button button-secondary" id="autoSolveBtn">Auto solved</button>
               <button class="button button-accent" id="exportBtn">Unduh ZIP</button>
             </div>
           </div>
@@ -93,6 +103,7 @@
           <div class="table-stage" id="tableStage">
             <div id="board" class="play-board" aria-label="Bingkai dengan area puzzle 3 kali 3">
               <img id="boardFrame" class="board-frame" alt="Bingkai puzzle dengan area putih 3 kali 3">
+              <svg id="boardSlots" class="board-slots" aria-hidden="true"></svg>
             </div>
             <div id="piecesLayer" class="pieces-layer" aria-label="Kepingan puzzle tersebar"></div>
             <div id="rotationControls" class="rotation-controls hidden" aria-hidden="true">

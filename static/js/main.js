@@ -2,6 +2,7 @@
   const $ = id => document.getElementById(id);
   let selectedFile = null;
   let previewUrl = '';
+  let zipFile = null;
 
   function notify(message) {
     $('status').textContent = message;
@@ -14,6 +15,7 @@
   window.PuzzleUI = { notify };
 
   $('startBtn').onclick = () => $('workspace').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('solveZipBtn').onclick = () => $('zipWorkspace').scrollIntoView({ behavior: 'smooth', block: 'start' });
   $('changeBtn').onclick = () => $('fileInput').click();
 
   const mosaic = $('heroMosaic');
@@ -71,6 +73,35 @@
     } finally {
       button.disabled = false;
       button.textContent = 'Buat puzzle';
+    }
+  };
+
+  $('zipInput').addEventListener('change', event => {
+    zipFile = event.target.files?.[0] || null;
+    $('loadZipBtn').disabled = !zipFile;
+    $('zipMeta').textContent = zipFile ? `${zipFile.name} (${(zipFile.size / 1024 / 1024).toFixed(2)} MB)` : 'ZIP hasil unduhan Puzzle World';
+  });
+
+  $('loadZipBtn').onclick = async () => {
+    if (!zipFile) return;
+    const button = $('loadZipBtn');
+    button.disabled = true;
+    button.textContent = 'Memuat...';
+    const body = new FormData();
+    body.append('archive', zipFile);
+    try {
+      const response = await fetch('/api/upload-zip', { method: 'POST', body });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Gagal membaca ZIP puzzle.');
+      await window.PuzzleGame.load(result);
+      $('playSection').classList.remove('hidden');
+      notify('Puzzle dari ZIP siap dimainkan.');
+      setTimeout(() => $('playSection').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+    } catch (error) {
+      notify(error.message);
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Mainkan puzzle ZIP';
     }
   };
 })();

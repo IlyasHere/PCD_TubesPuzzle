@@ -124,14 +124,9 @@ def create_empty_frame(source: Image.Image) -> Image.Image:
     xs = grid_bounds(width, FRAME_GRID_SIZE)
     ys = grid_bounds(height, FRAME_GRID_SIZE)
     line_width = max(1, min(width, height) // 360)
-    grid_color = (145, 136, 121, 255)
     border_color = (68, 65, 59, 255)
+    # Keep the 3 x 3 target white; the browser draws its nine jigsaw boundaries.
     draw.rectangle((xs[1], ys[1], xs[4] - 1, ys[4] - 1), fill=(255, 255, 255, 255))
-    for x in xs[2:4]:
-        draw.line((x, ys[1], x, ys[4] - 1), fill=grid_color, width=line_width)
-    for y in ys[2:4]:
-        draw.line((xs[1], y, xs[4] - 1, y), fill=grid_color, width=line_width)
-    draw.rectangle((xs[1], ys[1], xs[4] - 1, ys[4] - 1), outline=border_color, width=line_width)
     draw.rectangle((0, 0, width - 1, height - 1), outline=border_color, width=line_width)
     return frame
 

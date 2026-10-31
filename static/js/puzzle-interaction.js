@@ -5,16 +5,57 @@
   let pieces = [];
   let selectedId = null;
   let drag = null;
+  let solving = false;
 
   const stage = $('tableStage');
   const board = $('board');
   const layer = $('piecesLayer');
   const controls = $('rotationControls');
   const frame = $('boardFrame');
+  const slots = $('boardSlots');
   const gameStatus = $('gameStatus');
 
   function randomRotation() {
     return ROTATIONS[Math.floor(Math.random() * ROTATIONS.length)];
+  }
+
+  function slotPath(edges, data) {
+    const shortest = Math.min(data.width, data.height);
+    const radiusX = .18 * shortest / data.width;
+    const radiusY = .18 * shortest / data.height;
+    let path = 'M 0 0';
+    const edge = (side, startX, startY, endX, endY, radiusAlong, radiusAcross) => {
+      const value = edges[side] || 0;
+      if (!value) return ` L ${endX} ${endY}`;
+      const sweep = value > 0 ? 1 : 0;
+      return ` L ${startX} ${startY} A ${radiusAlong} ${radiusAcross} 0 0 ${sweep} ${endX} ${endY}`;
+    };
+    path += edge('top', .5 - radiusX, 0, .5 + radiusX, 0, radiusX, radiusY);
+    path += ' L 1 0';
+    path += edge('right', 1, .5 - radiusY, 1, .5 + radiusY, radiusX, radiusY);
+    path += ' L 1 1';
+    path += edge('bottom', .5 + radiusX, 1, .5 - radiusX, 1, radiusX, radiusY);
+    path += ' L 0 1';
+    path += edge('left', 0, .5 + radiusY, 0, .5 - radiusY, radiusX, radiusY);
+    return `${path} Z`;
+  }
+
+  function renderSlots(data) {
+    slots.replaceChildren();
+    slots.setAttribute('viewBox', '0 0 3 3');
+    slots.setAttribute('preserveAspectRatio', 'none');
+    const whiteArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    whiteArea.setAttribute('width', '3');
+    whiteArea.setAttribute('height', '3');
+    whiteArea.setAttribute('fill', '#fff');
+    slots.append(whiteArea);
+    for (const piece of data.pieces) {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', slotPath(piece.edges, data));
+      path.setAttribute('transform', `translate(${piece.col} ${piece.row})`);
+      path.setAttribute('class', 'board-slot');
+      slots.append(path);
+    }
   }
 
   function stageRect() {
@@ -164,7 +205,7 @@
 
   function pointerDown(event) {
     const piece = pieces[Number(event.currentTarget.dataset.id)];
-    if (!piece || piece.placed || !isOpaquePoint(piece, event.clientX, event.clientY)) return;
+    if (solving || !piece || piece.placed || !isOpaquePoint(piece, event.clientX, event.clientY)) return;
     selectedId = piece.id;
     drag = {
       id: piece.id,
@@ -253,6 +294,7 @@
   }
 
   function reset() {
+    if (solving) return;
     selectedId = null;
     $('completeOverlay').classList.add('hidden');
     pieces.forEach(piece => {
@@ -265,9 +307,11 @@
   }
 
   async function load(data) {
+    solving = false;
     puzzle = data;
     selectedId = null;
     frame.src = data.frameUrl;
+    renderSlots(data);
     board.style.setProperty('--image-ratio', `${data.width}/${data.height}`);
     layer.replaceChildren();
     pieces = data.pieces.map(piece => ({ ...piece, x: 0, y: 0, rotation: randomRotation(), placed: false, el: null }));
@@ -284,6 +328,26 @@
     });
   }
 
+  async function autoSolve() {
+    if (!puzzle || solving) return;
+    solving = true;
+    selectedId = null;
+    controls.classList.add('hidden');
+    $('autoSolveBtn').disabled = true;
+    gameStatus.textContent = 'Auto solved sedang menyusun kepingan...';
+    for (const piece of pieces) {
+      if (piece.placed) continue;
+      piece.rotation = 0;
+      Object.assign(piece, targetPosition(piece));
+      piece.placed = true;
+      render();
+      updateProgress();
+      await new Promise(resolve => setTimeout(resolve, 190));
+    }
+    solving = false;
+    $('autoSolveBtn').disabled = false;
+  }
+
   $('rotateLeftBtn').onclick = () => selectedId !== null && rotate(selectedId, -90);
   $('rotateRightBtn').onclick = () => selectedId !== null && rotate(selectedId, 90);
   document.addEventListener('keydown', event => {
@@ -292,11 +356,13 @@
     if (event.key.toLowerCase() === 'e') rotate(selectedId, 90);
   });
   $('shuffleBtn').onclick = () => {
+    if (solving) return;
     scatter(pieces.filter(piece => !piece.placed), true);
     render();
     window.PuzzleUI.notify('Kepingan yang belum terpasang sudah diacak.');
   };
   $('resetBtn').onclick = reset;
+  $('autoSolveBtn').onclick = autoSolve;
   $('playAgainBtn').onclick = reset;
   $('showOriginal').onclick = () => {
     if (!puzzle) return;
